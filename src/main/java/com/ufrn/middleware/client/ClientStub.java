@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Arrays;
+import java.util.List;
 
 public class ClientStub {
     private final String nameServiceHost;
@@ -15,52 +17,37 @@ public class ClientStub {
     }
 
     public void sendMessage(String serviceName, String message) {
-        communicateWithService(serviceName, message);
+        communicateWithService(serviceName, Arrays.asList(message));
     }
 
-    public void getMessages(String serviceName) {
-        communicateWithService(serviceName, "GET MESSAGES");
-    }
-
-    private void communicateWithService(String serviceName, String message) {
+    public void communicateWithService(String serviceName, List<String> messages) {
         try {
             // Conexão com o serviço de nomes para obter detalhes do serviço
-            Socket nameSocket = new Socket(nameServiceHost, nameServicePort);
-            PrintWriter nameOut = new PrintWriter(nameSocket.getOutputStream(), true);
-            BufferedReader nameIn = new BufferedReader(new InputStreamReader(nameSocket.getInputStream()));
+            Socket nameServiceSocket = new Socket(this.nameServiceHost, this.nameServicePort);
+            PrintWriter nameServiceOut = new PrintWriter(nameServiceSocket.getOutputStream(), true);
+            BufferedReader nameServiceIn = new BufferedReader(new InputStreamReader(nameServiceSocket.getInputStream()));
 
-            nameOut.println(serviceName);
-            String serviceDetails = nameIn.readLine();  // espera receber "host:port"
-            nameSocket.close();
+            nameServiceOut.println(serviceName);
+            String serviceDetails = nameServiceIn.readLine(); // Recebe "host:porta" do serviço
+            nameServiceSocket.close();
 
             if (serviceDetails == null || serviceDetails.equals("Service not found")) {
                 System.out.println("Service not found or no response from name service.");
                 return;
             }
 
-            String[] details = serviceDetails.split(":");
-            String serviceHost = details[0];
-            int servicePort = Integer.parseInt(details[1]);
-
-            // Conexão com o serviço real
-            Socket serviceSocket = new Socket(serviceHost, servicePort);
+            String[] address = serviceDetails.split(":");
+            Socket serviceSocket = new Socket(address[0], Integer.parseInt(address[1]));
             PrintWriter serviceOut = new PrintWriter(serviceSocket.getOutputStream(), true);
             BufferedReader serviceIn = new BufferedReader(new InputStreamReader(serviceSocket.getInputStream()));
 
-            // Envio da mensagem ou solicitação para o serviço
-            serviceOut.println(message);
-
-            // Leitura das respostas do serviço
-            String response;
-            while (true) {
-                response = serviceIn.readLine();
-                if (response == null) { // Se `null`, o servidor fechou a conexão
-                    break;
-                }
+            for (String message : messages) {
+                serviceOut.println(message);
+                String response = serviceIn.readLine();  // Lê a resposta para cada mensagem enviada
                 System.out.println("Server response: " + response);
             }
 
-            serviceSocket.close();
+            serviceSocket.close();  // Fecha a conexão após completar todas as transações
         } catch (Exception e) {
             e.printStackTrace();
         }

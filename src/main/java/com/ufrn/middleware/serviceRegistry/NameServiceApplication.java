@@ -13,10 +13,6 @@ public class NameServiceApplication {
     private static Map<String, String> serviceRegistry = new HashMap<>();
 
     public static void main(String[] args) {
-        // Configura os serviços disponíveis
-        serviceRegistry.put("EchoService", "localhost:8080");  // Serviço existente para exemplo
-        serviceRegistry.put("MessageService", "localhost:8081");  // Novo serviço de mensagens
-
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             System.out.println("Name Service running on port " + PORT);
 
@@ -26,9 +22,17 @@ public class NameServiceApplication {
                     try (PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
                          BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
 
-                        String serviceName = in.readLine();
-                        String serviceDetails = serviceRegistry.getOrDefault(serviceName, "Service not found");
-                        out.println(serviceDetails);
+                        String inputLine = in.readLine();
+                        if (inputLine.contains(":")) {
+                            // Assume it's a registration message
+                            String[] parts = inputLine.split(" ", 2);
+                            serviceRegistry.put(parts[0], parts[1]);  // parts[0] = ServiceName, parts[1] = host:port
+                            out.println("Service registered successfully " + parts[0]);
+                        } else {
+                            // It's a lookup
+                            String serviceDetails = serviceRegistry.getOrDefault(inputLine, "Service not found");
+                            out.println(serviceDetails);
+                        }
                     } catch (Exception e) {
                         e.printStackTrace();
                     } finally {
