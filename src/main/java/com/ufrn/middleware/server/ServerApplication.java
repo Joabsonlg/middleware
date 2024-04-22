@@ -1,25 +1,22 @@
 package com.ufrn.middleware.server;
 
+
+import org.alicebot.ab.Chat;
+
+import java.io.File;
+
 public class ServerApplication {
     public static void main(String[] args) {
         // Portas para cada serviço
-        int echoServicePort = 8080;
+        int chatBotServicePort = 8080;
         int messageServicePort = 8081;
 
-        // Cria uma thread para o EchoService
-        Thread echoServiceThread = new Thread(() -> {
-            EchoService echoService = new EchoService(echoServicePort);
-            echoService.startService();
+        Thread chatBotServiceThread = new Thread(() -> {
+            ChatBotService chatBotService = new ChatBotService(chatBotServicePort);
+            ChatBotService.registerService("ChatBotService", "localhost", chatBotServicePort);
+            chatBotService.startService();
         });
 
-        // Cria uma thread para o MessageService
-        Thread messageServiceThread = new Thread(() -> {
-            MessageService messageService = new MessageService(messageServicePort);
-            messageService.startService();
-        });
-
-        // Inicia ambos os serviços
-        echoServiceThread.start();
-        messageServiceThread.start();
+        chatBotServiceThread.start();
     }
 }

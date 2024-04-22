@@ -26,5 +26,12 @@
             <version>1.7.30</version>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <artifactId>com.google</artifactId>
+            <groupId>Ab</groupId>
+            <version>0.0.4.3</version>
+            <scope>system</scope>
+            <systemPath>${basedir}/lib/program-ab-0.0.4.3/lib/Ab.jar</systemPath>
+        </dependency>
     </dependencies>
 </project>
