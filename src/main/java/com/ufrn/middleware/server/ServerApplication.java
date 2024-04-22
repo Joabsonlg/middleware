@@ -9,7 +9,6 @@ public class ServerApplication {
     public static void main(String[] args) {
         // Portas para cada serviço
         int chatBotServicePort = 8080;
-        int messageServicePort = 8081;
 
         Thread chatBotServiceThread = new Thread(() -> {
             ChatBotService chatBotService = new ChatBotService(chatBotServicePort);
